@@ -123,7 +123,6 @@ async def createOTP(request: Request, response: Response, payload: dict = Body(.
         log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /createOTP response: "+str(e))
         return {"status_code": 401, "message": message}
 
-    
 @router.post("/checkOTP")
 async def checkOTP(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
     try:
