@@ -79,6 +79,7 @@ async def checkPhone(request: Request, response: Response, payload: dict = Body(
             log("error","time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
             return pp
         pay = pp["payload"]
+        return pay
         cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
         if cus is None : 
             return {"status_code":200,"message":"this phone number is available"}
