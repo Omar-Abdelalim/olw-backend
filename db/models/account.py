@@ -15,6 +15,7 @@ class Account(Base):
     country=Column(String,nullable=False)
     currency=Column(String,nullable=False)
     friendlyName=Column(String,nullable=False)
+    iBan=Column(String,nullable=False)
 
     
     
