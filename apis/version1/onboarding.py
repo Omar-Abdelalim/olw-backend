@@ -93,10 +93,13 @@ async def checkPhone(request: Request, response: Response, payload: dict = Body(
             return pp
         pay = pp["payload"]
 
-        cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
-        if cus is None : 
+        # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
+        # if cus is None : 
+        #     return {"status_code":200,"message":"this phone number is available"}
+        # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
+        oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
+        if oo is None:
             return {"status_code":200,"message":"this phone number is available"}
-        log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
         return {"status_code":401,"message":"this phone number is taken"}
     except Exception as e:
         message = "exception "+str(e)+" occurred with checking phone"
@@ -273,10 +276,10 @@ async def createAccount(request: Request, response: Response, payload: dict = Bo
         
         if not cus.status == "approved":
             log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /createAccount body: "+str(pay)+" response: 401 customer not fully verified")
-            return {"status_code":301,"message":"customer not verfied, can't create account"}
+            return {"status_code":401,"message":"customer not verfied, can't create account"}
         if not True :#risk assessment
                 log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /createAccount body: "+str(pay)+" response: 401 iBan not correct")
-                return {"status_code":301,"message":"iBan incorrect"}    
+                return {"status_code":401,"message":"iBan incorrect"}    
         oldAccts = db.query(Account).filter(Account.customerID == pay["customerID"]).all()
         a = Account(customerID = pay["customerID"],dateTime= datetime.now(),accountStatus = "active",accountNumber = generate_bank_account(pay["customerID"],sub_account=len(oldAccts)+1),accountType = pay["accountType"],primaryAcount = len(oldAccts) == 0,balance=pay["balance"],country="KSA",currency="SAR",friendlyName=pay["friendlyName"],iBan=pay["iBan"])
         db.add(a)
