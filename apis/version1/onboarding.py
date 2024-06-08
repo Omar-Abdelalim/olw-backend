@@ -20,6 +20,8 @@ from db.models.customer import Customer
 from db.models.kyc import KYC
 from db.models.otp import OTP
 
+from db.globals.global_variables import tokens
+
 import requests
 from fastapi.responses import HTMLResponse
 from fastapi.encoders import jsonable_encoder
