@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, Header, Request, Body, Response, status
 from sqlalchemy.orm import Session
 from db.session import get_db
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 import base64
+from fastapi import FastAPI
+from pydantic import BaseModel
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -32,9 +34,10 @@ private_key = serialization.load_pem_private_key(
         backend=default_backend()
     )
 
-@router.post("/handshake/")
+@router.post("/handshake")
 def decrypt_message(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
-    ciphertext = base64.b64decode(payload['message'])
+    ciphertext_b64 =  payload['message']
+    ciphertext = base64.b64decode(ciphertext_b64)
     plaintext = private_key.decrypt(
     ciphertext,
     padding.OAEP(
@@ -45,4 +48,5 @@ def decrypt_message(request: Request, response: Response, payload: dict = Body(.
     )
 
     plaintext2_str = plaintext.decode('utf-8')
+    print(plaintext2_str)
     return {"decrypted_message": plaintext2_str}
