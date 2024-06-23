@@ -7,6 +7,7 @@ import asyncio
 from apis.version1.onboarding  import router as onboarding_router
 from apis.version1.test  import router as testing_router
 from apis.version1.encyption import router as encryption_router
+from apis.version1.middleware import decryptMiddleware
 
 active_session = {}
 
@@ -16,6 +17,7 @@ def create_tables():
 
 def startapplication():
     app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION,docs_url=None, redoc_url=None)
+    app.add_middleware(decryptMiddleware)
     app.include_router(onboarding_router)
     app.include_router(testing_router)
     app.include_router(encryption_router)

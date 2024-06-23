@@ -15,13 +15,25 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from cryptography.hazmat.primitives.asymmetric import rsa
 from datetime import datetime, timedelta
-
 from db.globals.global_variables import tokens
+#aMY IMPORT
+import logging
+from pydantic import BaseModel
+import os
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC  # Import PBKDF2HMAC
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import base64
+from datetime import datetime
 session_exp_time = 10 #minutes
-
 
 router = APIRouter()
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 numberOfOPTTrials = 3
 countryCodes = {"Egypt": "+20", "USA": "+1","KSA":"+966"}  # Example list of allowed countries
 OTPvalidMinutes = 10
@@ -87,20 +99,85 @@ def encrypt(body,ip):
     return body
 
 
-@router.post("/handshake")
-def decrypt_message(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
-    ciphertext_b64 =  payload['message']
-    ciphertext = base64.b64decode(ciphertext_b64)
-    plaintext = private_key.decrypt(
-    ciphertext,
+with open('keys/public_key.pem', 'rb') as public_file:
+    public_pem = public_file.read()
+public_key = serialization.load_pem_public_key(
+        public_pem,
+        backend=default_backend()
+    )
+class DecryptRequest(BaseModel):
+    message: str
+
+class DecryptSessionKeyRequest(BaseModel):
+    encrypted_session_key: str
+    aes_key: str
+    iv: str
+
+def load_private_key():
+    with open("keys/private_key.pem", "rb") as private_key_file:
+        private_key = serialization.load_pem_private_key(
+            private_key_file.read(),
+            password=None
+        )
+    return private_key
+
+def load_public_key():
+    with open("keys/public_key.pem", "rb") as public_key_file:
+        public_key = serialization.load_pem_public_key(
+            public_key_file.read()
+        )
+    return public_key
+
+
+@router.post("/encrypt")
+def encrypt_message(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+    plaintext = payload['text']
+
+    # Encrypt the plaintext using OAEP padding
+    ciphertext = public_key.encrypt(
+    plaintext.encode('utf-8'),
     padding.OAEP(
         mgf=padding.MGF1(algorithm=hashes.SHA1()),
         algorithm=hashes.SHA256(),
         label=None
     )
     )
-    
-    plaintext2_str = plaintext.decode('utf-8')
+# Encode the ciphertext to base64 for easy display and storage
+    ciphertext_b64 = base64.b64encode(ciphertext).decode('utf-8')
+    print(ciphertext_b64)
+    return {"decrypted_message": ciphertext_b64}
+
+
+def decrypt_data(encrypted_data: str) -> bytes:
+    private_key = load_private_key()
+    encrypted_data_bytes = base64.b64decode(encrypted_data.encode())
+    decrypted_data = private_key.decrypt(
+        encrypted_data_bytes,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return decrypted_data
+@router.post("/handshake")
+def decrypt_message(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
+
+    try:
+        logger.info("Received data for decryption.")
+        if not data.message:
+            logger.warning("encrypted_data field is missing in the request.")
+            raise HTTPException(status_code=400, detail="encrypted_data field is required")
+        decrypted_message = decrypt_data(data.message).decode()
+        logger.info("Decryption successful.")
+        
+    except HTTPException as e:
+        logger.error(f"HTTP error: {e.detail}")
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JSONResponse(status_code=500, content={"detail": f"Unexpected error: {str(e)}"})
+    plaintext2_str = decrypted_message
     ip = request.client.host
     
     tokens [ip] = {'key':plaintext2_str,'exp':datetime.now()+timedelta(minutes=session_exp_time)}
