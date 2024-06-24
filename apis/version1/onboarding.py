@@ -1,5 +1,9 @@
-from fastapi import APIRouter, Depends, Header, Request, Body, Response, status
+from http.client import HTTPException
+
+from fastapi import APIRouter, Depends, Header, Request, Body, Response, status,HTTPException
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+
 from db.session import get_db
 from typing import Annotated
 import json
@@ -10,6 +14,7 @@ from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from string import Template
+from pydantic import BaseModel
 
 import smtplib
 from email.mime.text import MIMEText
@@ -21,7 +26,11 @@ from db.models.kyc import KYC
 from db.models.otp import OTP
 
 from db.globals.global_variables import tokens
+<<<<<<< HEAD
 from apis.version1.encryption import decrypt_data#,encrypt
+=======
+from apis.version1.encyption import decrypt, encrypt, DecryptRequest, decrypt_data
+>>>>>>> e10627c098a970e5e0ee6867dd24c0935eb2bfa7
 
 import requests
 from fastapi.responses import HTMLResponse
@@ -57,10 +66,31 @@ def log(filename,line):
         print("An error occurred:", str(e))
         return False
 
+def decrypt_message_again(data: DecryptRequest):
+    from fastapi.responses import JSONResponse
+    try:
+        if not data.message:
+            raise HTTPException(status_code=400, detail="encrypted_data field is required")
+        decrypted_message = decrypt_data(data.message).decode()
+    except HTTPException as e:
+        print(e.datils)
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": f"Unexpected error: {str(e)}"})
+    plaintext2_str = decrypted_message
 
-def preprocess(payload,names,requ):
+    print(type(plaintext2_str))
+
+    return plaintext2_str
+def preprocess(data: DecryptRequest,names,requ):
     
+<<<<<<< HEAD
     p = decrypt_data(payload["message"])
+=======
+    p = data
+    print("from check phone",p)
+
+>>>>>>> e10627c098a970e5e0ee6867dd24c0935eb2bfa7
     p = p.replace("'",'\"')
     p =  json.loads(p)
     l = log("requests","time: "+str(datetime.now())+" api: "+requ+" body: "+str(p))
@@ -88,6 +118,7 @@ def generate_bank_account(customerID,account_type=1, sub_account=1, currency_cod
     return bank_account
     
 
+<<<<<<< HEAD
 # @router.post("/checkPhone")
 # async def checkPhone(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
 #     try:
@@ -111,6 +142,38 @@ def generate_bank_account(customerID,account_type=1, sub_account=1, currency_cod
 #         message = "exception "+str(e)+" occurred with checking phone"
 #         log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
 #         return {"status_code": 401, "message": message}
+=======
+class DecryptRequest(BaseModel):
+    message: str
+
+
+@router.post("/checkPhone")
+async def checkPhone(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
+    if request.state.decrypt_request is None:
+        raise ValueError("Invalid request body")
+    return request.state.decrypt_request
+    names = ["phoneNumber","countryCode"]
+    pp = preprocess(data,names,"/checkPhone")
+    if not pp["status_code"] == 200:
+        log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    print(pp['payload'])
+
+    # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
+    # if cus is None :
+    #     return {"status_code":200,"message":"this phone number is available"}
+    # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
+    oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
+    if oo is None:
+        return encrypt(str({"status_code":200,"message":"this phone number is available"}),request.client.host)
+
+    return encrypt(str({"status_code":401,"message":"this phone number is taken"}),request.client.host)
+    # except Exception as e:
+    #     message = "exception "+str(e)+" occurred with checking phone"
+    #     log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
+    #     return {"status_code": 401, "message": message}
+>>>>>>> e10627c098a970e5e0ee6867dd24c0935eb2bfa7
 
 @router.post("/createOTP")
 async def createOTP(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
