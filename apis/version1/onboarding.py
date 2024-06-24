@@ -116,9 +116,6 @@ class DecryptRequest(BaseModel):
 
 @router.post("/checkPhone")
 async def checkPhone(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
-    if request.state.decrypt_request is None:
-        raise ValueError("Invalid request body")
-    return request.state.decrypt_request
     names = ["phoneNumber","countryCode"]
     pp = preprocess(data,names,"/checkPhone")
     if not pp["status_code"] == 200:
@@ -127,10 +124,10 @@ async def checkPhone(request: Request, response: Response, data: DecryptRequest,
     pay = pp["payload"]
     print(pp['payload'])
 
-    # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
-    # if cus is None :
-    #     return {"status_code":200,"message":"this phone number is available"}
-    # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
+    cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
+    if cus is None :
+        return {"status_code":200,"message":"this phone number is available"}
+    log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
     oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
     if oo is None:
         return encrypt(str({"status_code":200,"message":"this phone number is available"}),request.client.host)
