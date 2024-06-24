@@ -6,7 +6,7 @@ from db.base import Base
 import asyncio
 from apis.version1.onboarding  import router as onboarding_router
 from apis.version1.test  import router as testing_router
-from apis.version1.encyption import router as encryption_router
+from apis.version1.encryption import app as encryption_router
 
 active_session = {}
 

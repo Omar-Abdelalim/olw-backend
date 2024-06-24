@@ -21,7 +21,7 @@ from db.models.kyc import KYC
 from db.models.otp import OTP
 
 from db.globals.global_variables import tokens
-from apis.version1.encyption import decrypt,encrypt
+from apis.version1.encryption import decrypt_data#,encrypt
 
 import requests
 from fastapi.responses import HTMLResponse
@@ -60,7 +60,7 @@ def log(filename,line):
 
 def preprocess(payload,names,requ):
     
-    p = decrypt(payload["message"])
+    p = decrypt_data(payload["message"])
     p = p.replace("'",'\"')
     p =  json.loads(p)
     l = log("requests","time: "+str(datetime.now())+" api: "+requ+" body: "+str(p))
@@ -88,29 +88,29 @@ def generate_bank_account(customerID,account_type=1, sub_account=1, currency_cod
     return bank_account
     
 
-@router.post("/checkPhone")
-async def checkPhone(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
-    try:
-        names = ["phoneNumber","countryCode"]
-        pp = preprocess(payload,names,"/checkPhone")
-        if not pp["status_code"] == 200:
-            log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
-            return pp
-        pay = pp["payload"]
+# @router.post("/checkPhone")
+# async def checkPhone(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+#     try:
+#         names = ["phoneNumber","countryCode"]
+#         pp = preprocess(payload,names,"/checkPhone")
+#         if not pp["status_code"] == 200:
+#             log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
+#             return pp
+#         pay = pp["payload"]
         
-        # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
-        # if cus is None : 
-        #     return {"status_code":200,"message":"this phone number is available"}
-        # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
-        oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
-        if oo is None:
-            return encrypt(str({"status_code":200,"message":"this phone number is available"}),request.client.host)
+#         # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
+#         # if cus is None : 
+#         #     return {"status_code":200,"message":"this phone number is available"}
+#         # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
+#         oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
+#         if oo is None:
+#             return encrypt(str({"status_code":200,"message":"this phone number is available"}),request.client.host)
             
-        return encrypt(str({"status_code":401,"message":"this phone number is taken"}),request.client.host)
-    except Exception as e:
-        message = "exception "+str(e)+" occurred with checking phone"
-        log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
-        return {"status_code": 401, "message": message}
+#         return encrypt(str({"status_code":401,"message":"this phone number is taken"}),request.client.host)
+#     except Exception as e:
+#         message = "exception "+str(e)+" occurred with checking phone"
+#         log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
+#         return {"status_code": 401, "message": message}
 
 @router.post("/createOTP")
 async def createOTP(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
