@@ -6,15 +6,8 @@ from db.base import Base
 import asyncio
 from apis.version1.onboarding  import router as onboarding_router
 from apis.version1.test  import router as testing_router
-<<<<<<< HEAD
-from apis.version1.encryption import app as encryption_router
-=======
 from apis.version1.encyption import router as encryption_router
 from apis.version1.middleware import decryptMiddleware
-<<<<<<< HEAD
->>>>>>> e10627c098a970e5e0ee6867dd24c0935eb2bfa7
-=======
->>>>>>> 6bdea9418ab9bfa3a011ac6d6bb29f1eebfc3a23
 
 active_session = {}
 
