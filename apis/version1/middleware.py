@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Header, Request, Body, Response, status,HTTPException,FastAPI, Request
+from fastapi import APIRouter, Depends, Header, Request, Body, Response, status, HTTPException, FastAPI, Request
 
 from starlette.middleware.base import BaseHTTPMiddleware
 import time
 from apis.version1.encyption import decrypt, encrypt, decrypt_data
 import json
+from starlette.responses import JSONResponse
 
 from pydantic import BaseModel
 
@@ -13,8 +14,7 @@ class DecryptRequest(BaseModel):
 
 
 class decryptMiddleware(BaseHTTPMiddleware):
-    def decrypt_message_again(self,data: DecryptRequest):
-
+    def decrypt_message_again(self, data: DecryptRequest):
         from fastapi.responses import JSONResponse
         # try:
         if not data.message:
@@ -26,33 +26,33 @@ class decryptMiddleware(BaseHTTPMiddleware):
         #     return JSONResponse(status_code=500, content={"detail": f"Unexpected error: {str(e)}"})
         plaintext2_str = decrypted_message
 
-        print("plain text",plaintext2_str)
+        return {"message": plaintext2_str}
 
-        return plaintext2_str
     async def dispatch(self, request: Request, call_next):
-        # Code to execute before the request is processed
-        start_time = time.time()
-        body = await request.body()
-        # Print or log the request body
-        body = body.decode('utf-8')
-        json_body = json.loads(body)
-        print(json_body)
-        decrypt_request = DecryptRequest(**json_body)
-        p=self.decrypt_message_again(decrypt_request)
-        print("encryptes_message",p)
 
-        # Process the request and get the response
-        response = await call_next(request)
-        response.headers['encrypted_key'] = str(p)
-
-        # Code to execute after the response is ready
-        process_time = time.time() - start_time
-        print(process_time)
-        
-        response.headers['X-Process-Time'] = str(process_time)
-        
-        return response
+        # # Code executed before the request is processed
 
 
-   
-    
+
+      body = await request.body()
+
+      json_body = json.loads(body)
+      # print(json_body)
+      decrypt_request = DecryptRequest(**json_body)
+      decrypted_message = self.decrypt_message_again(decrypt_request)
+      modified_body =  json.dumps(decrypted_message).encode('utf-8') # Modify if necessary
+
+      # Define a new receive function that returns the modified body
+      async def receive() -> dict:
+          return {"type": "http.request", "body": modified_body}
+      print(modified_body)
+
+      new_request = Request(scope=request.scope, receive=receive)
+
+      response = await call_next(new_request)
+
+
+      return response
+
+
+
