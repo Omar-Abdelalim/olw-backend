@@ -50,9 +50,10 @@ class decryptMiddleware(BaseHTTPMiddleware):
       new_request = Request(scope=request.scope, receive=receive)
 
       response = await call_next(new_request)
+      out_resp = encrypt(response,request.client.host)
 
 
-      return response
+      return out_resp
 
 
 
