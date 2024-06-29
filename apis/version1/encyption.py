@@ -172,14 +172,14 @@ def decrypt_data(encrypted_data: str) -> bytes:
 
 @router.post("/handshake")
 def decrypt_message(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
-    # return data.message
+   # return data.message
     # return {"status":"i m working"}
     # try:
     #     logger.info("Received data for decryption.")
     #     if not data.message:
     #         logger.warning("encrypted_data field is missing in the request.")
     #         raise HTTPException(status_code=400, detail="encrypted_data field is required")
-    #     decrypted_message = decrypt_data(data.message).decode()
+    #     decrypted_message = decr ypt_data(data.message).decode()
     #     logger.info("Decryption successful.")
     #
     # except HTTPException as e:
@@ -192,4 +192,4 @@ def decrypt_message(request: Request, response: Response, data: DecryptRequest, 
     ip = request.client.host
 
     tokens[ip] = {'key': data.message, 'exp': datetime.now() + timedelta(minutes=session_exp_time)}
-    return {"decrypted_message":  data.message, 't': tokens}
+    return {"status_code":200,"message":  "Hand Shake Successfully "}

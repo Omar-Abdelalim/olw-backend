@@ -30,14 +30,10 @@ class decryptMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
 
-        # # Code executed before the request is processed
-
 
 
       body = await request.body()
-
       json_body = json.loads(body)
-      # print(json_body)
       decrypt_request = DecryptRequest(**json_body)
       decrypted_message = self.decrypt_message_again(decrypt_request)
       modified_body =  json.dumps(decrypted_message).encode('utf-8') # Modify if necessary
@@ -45,13 +41,17 @@ class decryptMiddleware(BaseHTTPMiddleware):
       # Define a new receive function that returns the modified body
       async def receive() -> dict:
           return {"type": "http.request", "body": modified_body}
-      print(modified_body)
 
       new_request = Request(scope=request.scope, receive=receive)
 
       response = await call_next(new_request)
-      out_resp = encrypt(response,request.client.host)
 
+      # out_resp = encrypt(response,request.client.host)
+      response_body = [section async for section in response.__dict__['body_iterator']]
+      response_body_str = b"".join(response_body).decode('utf-8')
+      print("response i m waitting",response_body_str)
+
+      out_resp = encrypt(response_body_str,request.client.host)
 
       return out_resp
 

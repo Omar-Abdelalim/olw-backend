@@ -123,27 +123,28 @@ class DecryptRequest(BaseModel):
 
 @router.post("/checkPhone")
 async def checkPhone(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
-    # names = ["phoneNumber","countryCode"]
+    # return json.loads(data.message)
+    names = ["phoneNumber","countryCode"]
     # pp = preprocess(data,names,"/checkPhone")
     # if not pp["status_code"] == 200:
     #     log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
     #     return pp
-    # pay = pp["payload"]
-    # print(pp['payload'])
+    pay = json.loads(data.message)
+    print(pay)
 
-    # cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
-    # if cus is None :
-    #     return {"status_code":200,"message":"this phone number is available"}
-    # log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
-    # oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
-    # if oo is None:
-    #     return encrypt(str({"status_code":200,"message":"this phone number is available"}),request.client.host)
+    cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
+    if cus is None :
+        return {"status_code":200,"message":"this phone number is available"}
+    log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pay)+" response: 401 this phone number is taken")
+    oo = db.query(OTP).filter(OTP.countryCode == pay["countryCode"],OTP.phoneNumber== pay["phoneNumber"],OTP.status == "complete").first()
+    if oo is None:
+        return {"status_code":200,"message":"this phone number is available"}
 
-    # return encrypt(str({"status_code":401,"message":"this phone number is taken"}),request.client.host)
-    # # except Exception as e:
-    # #     message = "exception "+str(e)+" occurred with checking phone"
-    # #     log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
-    # #     return {"status_code": 401, "message": message}
+    return {"status_code":401,"message":"this phone number is taken"}
+    # except Exception as e:
+    #     message = "exception "+str(e)+" occurred with checking phone"
+    #     log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone response: "+str(e))
+    #     return {"status_code": 401, "message": message}
     pass
 
 
