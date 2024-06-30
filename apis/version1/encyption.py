@@ -73,7 +73,7 @@ def decrypt(body):
 
 def encrypt(body, ip):
     t = tokens[ip]
-    GLOBAL_KEY = base64.b64decode('KTXBLMpA6vV3w7OFTAgfgnce8AuVRNmSsaTy5hgpHtk=')
+    GLOBAL_KEY = base64.b64decode(t['key'])
     GLOBAL_IV = os.urandom(12)
     encrypter = Cipher(
         algorithms.AES(GLOBAL_KEY),
@@ -192,4 +192,4 @@ def decrypt_message(request: Request, response: Response, data: DecryptRequest, 
     ip = request.client.host
 
     tokens[ip] = {'key': data.message, 'exp': datetime.now() + timedelta(minutes=session_exp_time)}
-    return {"status_code":200,"message":  "Hand Shake Successfully "}
+    return {"status_code":200,"message":"Hand Shake Successfully "}

@@ -53,7 +53,7 @@ class decryptMiddleware(BaseHTTPMiddleware):
 
       out_resp = encrypt(response_body_str,request.client.host)
 
-      return out_resp
+      return JSONResponse(content=out_resp)
 
 
 

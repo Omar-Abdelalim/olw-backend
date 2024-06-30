@@ -86,11 +86,12 @@ def decrypt_message_again(data: DecryptRequest):
 
 
 def preprocess(data: DecryptRequest, names, requ):
-    p = data
-    print("from check phone", p)
+    p = json.loads(data.message)
 
-    p = p.replace("'", '\"')
-    p = json.loads(p)
+    print("from ",requ," :", p)
+
+    # p = p.replace("'", '\"')
+    # p = json.loads(p)
     l = log("requests", "time: " + str(datetime.now()) + " api: " + requ + " body: " + str(p))
     if not l:
         return {"status_code": 301, "message": "error logging request"}
@@ -125,11 +126,11 @@ class DecryptRequest(BaseModel):
 async def checkPhone(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     # return json.loads(data.message)
     names = ["phoneNumber","countryCode"]
-    # pp = preprocess(data,names,"/checkPhone")
-    # if not pp["status_code"] == 200:
-    #     log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
-    #     return pp
-    pay = json.loads(data.message)
+    pp = preprocess(data,names,"/checkPhone")
+    if not pp["status_code"] == 200:
+        log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
+        return pp
+    pay = pp['payload']
     print(pay)
 
     cus = db.query(Customer).filter(Customer.countryCode == pay["countryCode"],Customer.phoneNumber == pay["phoneNumber"],not Customer.status == "inactive").first()
@@ -149,10 +150,10 @@ async def checkPhone(request: Request, response: Response, data: DecryptRequest,
 
 
 @router.post("/createOTP")
-async def createOTP(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def createOTP(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode"]
-        pp = preprocess(payload, names, "/createOTP")
+        pp = preprocess(data, names, "/createOTP")
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createOTP body: " + str(
@@ -178,10 +179,10 @@ async def createOTP(request: Request, response: Response, payload: dict = Body(.
 
 
 @router.post("/checkOTP")
-async def checkOTP(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def checkOTP(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode", "code"]
-        pp = preprocess(payload, names, "/checkOTP")
+        pp = preprocess(data, names, "/checkOTP")
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /checkOTP body: " + str(
@@ -233,11 +234,11 @@ async def checkOTP(request: Request, response: Response, payload: dict = Body(..
 
 
 @router.post("/createCustomer")
-async def createCustomer(request: Request, response: Response, payload: dict = Body(...),
+async def createCustomer(request: Request, response: Response, data: DecryptRequest,
                          db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode", "ID/Iqama", "DOB", "firstName", "lastName"]
-        pp = preprocess(payload, names, "/createCustomer")
+        pp = preprocess(data, names, "/createCustomer")
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createCustomer body: " + str(
