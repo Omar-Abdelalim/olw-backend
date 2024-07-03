@@ -25,7 +25,7 @@ from db.models.customer import Customer
 from db.models.kyc import KYC
 from db.models.otp import OTP
 
-from db.globals.global_variables import tokens
+from db.globals.global_variables import tokens,session_exp_time
 from apis.version1.encyption import decrypt, encrypt, DecryptRequest, decrypt_data
 
 import requests
@@ -85,7 +85,7 @@ def decrypt_message_again(data: DecryptRequest):
     return plaintext2_str
 
 
-def preprocess(data: DecryptRequest, names, requ):
+def preprocess(data: DecryptRequest, names, requ,ip):
     p = json.loads(data.message)
 
     print("from ",requ," :", p)
@@ -95,6 +95,10 @@ def preprocess(data: DecryptRequest, names, requ):
     l = log("requests", "time: " + str(datetime.now()) + " api: " + requ + " body: " + str(p))
     if not l:
         return {"status_code": 301, "message": "error logging request"}
+    if tokens[ip]['exp'] < datetime.now():
+        print({"status_code": 309, "message": "handshake again"})
+        return {"status_code": 309, "message": "handshake again"}
+    tokens[ip]['exp'] = datetime.now() + timedelta(minutes=session_exp_time)
     for i in names:
         if i not in p:
             return {"status_code": 400, "message": "missing variable: " + i}
@@ -126,7 +130,7 @@ class DecryptRequest(BaseModel):
 async def checkPhone(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     # return json.loads(data.message)
     names = ["phoneNumber","countryCode"]
-    pp = preprocess(data,names,"/checkPhone")
+    pp = preprocess(data,names,"/checkPhone",request.client.host)
     if not pp["status_code"] == 200:
         log("error","IP: "+request.client.host+" time: "+str(datetime.now())+" api: /checkPhone body: "+str(pp["payload"])+" response: "+str(pp["status_code"])+" "+str(pp["message"]))
         return pp
@@ -153,7 +157,7 @@ async def checkPhone(request: Request, response: Response, data: DecryptRequest,
 async def createOTP(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode"]
-        pp = preprocess(data, names, "/createOTP")
+        pp = preprocess(data, names, "/createOTP",request.client.host)
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createOTP body: " + str(
@@ -182,7 +186,7 @@ async def createOTP(request: Request, response: Response, data: DecryptRequest, 
 async def checkOTP(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode", "code"]
-        pp = preprocess(data, names, "/checkOTP")
+        pp = preprocess(data, names, "/checkOTP",request.client.host)
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /checkOTP body: " + str(
@@ -238,7 +242,7 @@ async def createCustomer(request: Request, response: Response, data: DecryptRequ
                          db: Session = Depends(get_db)):
     try:
         names = ["phoneNumber", "countryCode", "ID/Iqama", "DOB", "firstName", "lastName"]
-        pp = preprocess(data, names, "/createCustomer")
+        pp = preprocess(data, names, "/createCustomer",request.client.host)
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createCustomer body: " + str(
@@ -295,7 +299,7 @@ async def verifyCustomer(request: Request, response: Response, payload: dict = B
                          db: Session = Depends(get_db)):
     try:
         names = ["customerID"]
-        pp = preprocess(payload, names, "/verifyingCustomer")
+        pp = preprocess(payload, names, "/verifyingCustomer",request.client.host)
         if not pp["status_code"] == 200:
             log("error", "IP: " + request.client.host + " time: " + str(
                 datetime.now()) + " api: /verifyingCustomer body: " + str(pp["payload"]) + " response: " + str(
@@ -359,7 +363,7 @@ async def verifyCustomer(request: Request, response: Response, payload: dict = B
 async def createAccount(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
     try:
         names = ["customerID", "balance", "friendlyName", "iBan", "accountType"]
-        pp = preprocess(payload, names, "/createAccount")
+        pp = preprocess(payload, names, "/createAccount",request.client.host)
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createAccount body: " + str(
@@ -412,7 +416,7 @@ async def createAccount(request: Request, response: Response, payload: dict = Bo
 async def addKYC(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
     try:
         names = ["customerID", "income", "profession", "employment"]
-        pp = preprocess(payload, names, "/addKYC")
+        pp = preprocess(payload, names, "/addKYC",request.client.host)
         if not pp["status_code"] == 200:
             log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /addKYC body: " + str(
                 pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))

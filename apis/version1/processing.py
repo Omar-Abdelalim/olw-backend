@@ -43,7 +43,7 @@ from db.models.card import Card
 from db.models.vcards import VCard
 from db.models.vcard_status_log import VCardLogs
 
-from db.globals.global_variables import tokens
+from db.globals.global_variables import tokens,session_exp_time
 from apis.version1.encyption import decrypt, encrypt, DecryptRequest, decrypt_data
 
 import requests
@@ -103,7 +103,7 @@ def decrypt_message_again(data: DecryptRequest):
     return plaintext2_str
 
 
-def preprocess(data: DecryptRequest, names, requ):
+def preprocess(data: DecryptRequest, names, requ,ip):
     p = json.loads(data.message)
 
     print("from ",requ," :", p)
@@ -113,6 +113,10 @@ def preprocess(data: DecryptRequest, names, requ):
     l = log("requests", "time: " + str(datetime.now()) + " api: " + requ + " body: " + str(p))
     if not l:
         return {"status_code": 301, "message": "error logging request"}
+    if tokens[ip]['exp'] < datetime.now():
+        print({"status_code": 309, "message": "handshake again"})
+        return {"status_code": 309, "message": "handshake again"}
+    tokens[ip]['exp'] = datetime.now() + timedelta(minutes=session_exp_time)
     for i in names:
         if i not in p:
             return {"status_code": 400, "message": "missing variable: " + i}
@@ -143,46 +147,31 @@ class DecryptRequest(BaseModel):
 @router.post("/login")
 async def signIn(request: Request, payload: dict = Body(...), db: Session = Depends(get_db)):
   try:
-    em = payload["email"]
+    names = ["phoneNumber", "countryCode"]
+    pp = preprocess(payload, names, "/login",request.client.host)
+    if not pp["status_code"] == 200:
+        log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /login body: " + str(
+            pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    
 
-    pa = payload["password"]
-    code = payload["code"]
-    print(em)
-    print(pa)
-    print(code)
-    hashed_password = pa.encode('utf-8')
-
-
-    user = db.query(Customer).filter(Customer.email == em).first()
+    user = db.query(Customer).filter(Customer.phoneNumber == pay['phoneNumber'],Customer.countryCode == pay['countryCode']).first()
 
     if not user:
-        return {"status_code": 403, "message": "no user exists with this email"}
-    if not user.smsCode == code:
-        print(user.smsCode)
-        return {"status_code": 404, "message": "wrong code"}
-    elif datetime.now() > datetime.strptime(user.smsValid, '%Y-%m-%d %H:%M:%S.%f'):
-        return {"status_code": 404, "message": "code timed- out"}
+        return {"status_code": 403, "message": "no user exists with this number"}
+    tokens[request.client.host]['cusID'] = user.id 
+    
 
 
-    password = db.query(Password).filter(Password.customerID == str(user.id) , Password.passwordStatus == "active").first()
-
-    if not Hasher.verify_password(hashed_password, password.passwordHash):
-        return {"status_code": 404, "message": "Password doesn't match email", "orig": hashed_password,
-                "other": password}
-    db.query(Token).filter(Token.customerID == user.id).update({"status": "expired"})
-    t = Token(customerID=str(user.id), dateTime=datetime.now(), ip=request.client.host, token=generateToken(user.id),
-              expiration=datetime.now() + timedelta(minutes=tokenValidMins), status="active",deviceID="none")
-    db.add(t)
-    db.commit()
-    db.refresh(t)
-    account = db.query(Account).filter(Account.customerID == str(user.id), Account.primaryAccount == "1").first()
+    account = db.query(Account).filter(Account.customerID == str(user.id), Account.primaryAccount).first()
     bank = db.query(Bank).filter(Bank.accountNumber == account.accountNumber).first()
     bankb = db.query(BankBusiness).filter(BankBusiness.accountNumber == account.accountNumber).first()
     
     
 
   except:
-         message = "exception occurred with retrieving token"
+         message = "exception occurred with retrieving login"
          log(0,message)
          return {"status_code":401,"message":message}
-  return {"status_code":200,"user":user,"token":t,"account":account,"bank":bank,"bankBusiness":bankb}
+  return {"status_code":200,"user":user,"account":account,"bank":bank,"bankBusiness":bankb}

@@ -15,7 +15,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from cryptography.hazmat.primitives.asymmetric import rsa
 from datetime import datetime, timedelta
-from db.globals.global_variables import tokens
+from db.globals.global_variables import tokens,session_exp_time
 # aMY IMPORT
 import logging
 from pydantic import BaseModel
@@ -29,7 +29,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import base64
 from datetime import datetime
 
-session_exp_time = 10  # minutes
+  # minutes
 
 router = APIRouter()
 
