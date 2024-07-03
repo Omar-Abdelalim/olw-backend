@@ -172,7 +172,7 @@ async def intiAccts(request: Request=None,response: Response=None,db: Session = 
         if not adm is None:
             db.commit()
             return {"status_code": 201,"message":"wallet initiated"}
-        admin = Customer(firstName="OLW",lastName="",email="",birthdate="",customerStatus="admin")
+        admin = Customer(firstName="OLW",lastName="",email="",birthdate="",customerStatus="admin",dateTime = datetime.now())
         db.add(admin)
         
         OLWBank = db.query(Account).filter(Account.accountNumber == "1").first()
