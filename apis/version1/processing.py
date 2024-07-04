@@ -295,7 +295,6 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     
   except:
          message = "exception occurred with get create pin"
-          
          return {"status_code":401,"message":message}
   return {"status_code":200,"pin":p}
 
