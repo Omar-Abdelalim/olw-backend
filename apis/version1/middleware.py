@@ -29,8 +29,10 @@ class decryptMiddleware(BaseHTTPMiddleware):
         return {"message": plaintext2_str}
 
     async def dispatch(self, request: Request, call_next):
-
-
+      requested_url = request.url.path
+      if requested_url == "/initAccts":
+          response = await call_next(request)
+          return response
 
       body = await request.body()
       json_body = json.loads(body)
@@ -45,7 +47,8 @@ class decryptMiddleware(BaseHTTPMiddleware):
       new_request = Request(scope=request.scope, receive=receive)
 
       response = await call_next(new_request)
-
+      if requested_url == "/test":
+          return response
       # out_resp = encrypt(response,request.client.host)
       response_body = [section async for section in response.__dict__['body_iterator']]
       response_body_str = b"".join(response_body).decode('utf-8')

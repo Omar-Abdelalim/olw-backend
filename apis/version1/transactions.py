@@ -162,7 +162,7 @@ origins = [
 
 @router.post("/initAccts")
 async def intiAccts(request: Request=None,response: Response=None,db: Session = Depends(get_db)):
-        adm = db.query(Customer).filter(Customer.customerStatus == "admin").first()
+        adm = db.query(Customer).filter(Customer.status == "admin").first()
         addFee("00010001","0001","send money to wallet user",0.5,1,0,0,db)
         addFee("00010002","0001","National money transfer",0.5,1,5,1,db)
         addFee("00010003","0001","international money transfer",1,1,10,5,db)
@@ -172,22 +172,22 @@ async def intiAccts(request: Request=None,response: Response=None,db: Session = 
         if not adm is None:
             db.commit()
             return {"status_code": 201,"message":"wallet initiated"}
-        admin = Customer(firstName="OLW",lastName="",email="",birthdate="",customerStatus="admin",dateTime = datetime.now())
+        admin = Customer(firstName="OLW",lastName="",email="",birthDate="",status="admin",dateTime = datetime.now())
         db.add(admin)
         
         OLWBank = db.query(Account).filter(Account.accountNumber == "1").first()
         if OLWBank is None:
-            olw = Account(customerID="1",accountNumber="10-00000003-001-000",accountType="OLW",balance=10000,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="bank")
+            olw = Account(customerID="1",accountNumber="10-00000003-001-000",accountType="OLW",balance=10000,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="bank",iBan="0")
             db.add(olw)
 
         OLWAudit = db.query(Account).filter(Account.accountNumber == "2").first()
         if OLWBank is None:
-            olw = Account(customerID="1",accountNumber="10-00000001-001-000",accountType="OLW",balance=0,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="audit")
+            olw = Account(customerID="1",accountNumber="10-00000001-001-000",accountType="OLW",balance=0,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="audit",iBan="0")
             db.add(olw)
             
         OLWFees = db.query(Account).filter(Account.accountNumber == "3").first()
         if OLWFees is None:
-            olw = Account(customerID="1",accountNumber="10-00000005-001-000",accountType="OLW",balance=10000,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="fees")
+            olw = Account(customerID="1",accountNumber="10-00000005-001-000",accountType="OLW",balance=10000,dateTime=datetime.now(),accountStatus="Admin",primaryAccount=1,currency="UNI",country="UNI",friendlyName="fees",iBan="0")
             db.add(olw)
         with open("last_account_number.txt", "w") as file:
             file.write(str(100)) 

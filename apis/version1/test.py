@@ -73,7 +73,8 @@ def generateOTP(length):
 
 
 @router.post("/test")
-async def test(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def test(request: Request, response: Response, data: dict = Body(...), db: Session = Depends(get_db)):
+    return json.loads(data.message)
     try:
         if not "none" in tokens:
             return "empty"
