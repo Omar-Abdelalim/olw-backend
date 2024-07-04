@@ -174,3 +174,29 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
          log(0,message)
          return {"status_code":401,"message":message}
   return {"status_code":200,"user":user,"account":account,"bank":bank,"bankBusiness":bankb}
+
+
+
+@router.post("/getAccount")
+async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(get_db)):
+  try:
+    names = ["accountNumber"]
+    pp = preprocess(data, names, "/getAccount",request.client.host)
+    if not pp["status_code"] == 200:
+        log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /login body: " + str(
+            pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    
+
+    acc = db.query(Account).filter(Account.accountNumber == pay['accountNumber']).first()
+
+    if not acc:
+        return {"status_code": 403, "message": "no account exists with this number"}
+    
+  except:
+         message = "exception occurred with get account"
+         log(0,message)
+         return {"status_code":401,"message":message}
+  return {"status_code":200,"account":acc}
+

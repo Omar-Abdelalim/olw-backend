@@ -195,6 +195,29 @@ async def intiAccts(request: Request=None,response: Response=None,db: Session = 
         db.commit()
         return {"status_code": 201, "message": "wallet and fees added"}
 
+@router.post("/getTransaction")
+async def gettansaction(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
+        try:
+            pp = preprocess(data,request.client.host)
+            if not pp["status_code"] == 200:
+                return pp
+            payload = pp["payload"]
+            
+            accts = db.query(Account).filter(Account.customerID == payload['customerID']).all()
+            nums = []
+            for i in accts:
+                nums.append(i)
+
+            inTransactions = db.query(Transaction).filter(Transaction.accountNo.in_(nums)).all()
+            outTransactions =  db.query(Transaction).filter(Transaction.outAccountNo.in_(nums)).all()
+            
+
+            
+        except:
+            message = "exception occurred with creating transaction"
+            log(0,message)
+            return {"status_code":401,"message":message}
+        return {"status_code": 201,"in transactions":inTransactions,"out transactions":outTransactions}
 
 @router.post("/transaction")
 async def tansaction1(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
