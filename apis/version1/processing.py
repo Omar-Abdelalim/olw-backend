@@ -42,6 +42,7 @@ from db.models.charge import Charge
 from db.models.card import Card
 from db.models.vcards import VCard
 from db.models.vcard_status_log import VCardLogs
+from db.models.pin import Pin
 
 from db.globals.global_variables import tokens,session_exp_time
 from apis.version1.encyption import decrypt, encrypt, DecryptRequest, decrypt_data
@@ -199,4 +200,32 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
          log(0,message)
          return {"status_code":401,"message":message}
   return {"status_code":200,"account":acc}
+
+@router.post("/createPin")
+async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(get_db)):
+  try:
+    names = ["customerID","pin"]
+    pp = preprocess(data, names, "/createPin",request.client.host)
+    if not pp["status_code"] == 200:
+        log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createPin body: " + str(
+            pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    
+    c = db.query(Customer).filter(Customer.id == pay['customerID']).first()
+    if c is None:
+        return {"status_code": 403, "message": "no customer exists with this number"}
+    if not len(pay['pin']) == 4:
+        return {"status_code": 403, "message": "pin should be 4 numbers"}
+    p = Pin(customerID = pay['customerID'],pin = pay['pin'])
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+
+    
+  except:
+         message = "exception occurred with get create pin"
+         log(0,message)
+         return {"status_code":401,"message":message}
+  return {"status_code":200,"pin":p}
 

@@ -20,6 +20,7 @@ from db.models.charge import Charge
 from db.models.card import Card
 from db.models.vcards import VCard
 from db.models.vcard_status_log import VCardLogs
+from db.models.pin import Pin
 
 
 

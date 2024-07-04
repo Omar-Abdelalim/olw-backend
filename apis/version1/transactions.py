@@ -195,7 +195,7 @@ async def intiAccts(request: Request=None,response: Response=None,db: Session = 
         db.commit()
         return {"status_code": 201, "message": "wallet and fees added"}
 
-@router.post("/getTransaction")
+@router.post("/getTransactions")
 async def gettansaction(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
             pp = preprocess(data,request.client.host)
