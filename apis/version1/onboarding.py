@@ -92,9 +92,11 @@ def preprocess(data: DecryptRequest, names, requ,ip):
 
     # p = p.replace("'", '\"')
     # p = json.loads(p)
-    l = log("requests", "time: " + str(datetime.now()) + " api: " + requ + " body: " + str(p))
-    if not l:
-        return {"status_code": 301, "message": "error logging request"}
+    # l = log("requests", "time: " + str(datetime.now()) + " api: " + requ + " body: " + str(p))
+    # if not l:
+    #
+    #     return {"status_code": 301, "message": "error logging request"}
+
     if tokens[ip]['exp'] < datetime.now():
         print({"status_code": 309, "message": "handshake again"})
         return {"status_code": 309, "message": "handshake again"}
@@ -180,6 +182,34 @@ async def createOTP(request: Request, response: Response, data: DecryptRequest, 
         log("error",
             "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createOTP response: " + str(e))
         return {"status_code": 401, "message": message}
+
+
+
+@router.post("/acctBalance")
+async def getBalance(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
+    # try:
+        names = ["id"]
+        pp = preprocess(data, names, "/acctBalance",request.client.host)
+        if not pp["status_code"] == 200:
+            log("error",
+                "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /acctBalance body: " + str(
+                    pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+            return pp
+        pay = pp["payload"]
+        acc = db.query(Account).filter(Account.customerID == pay["id"],Account.primaryAccount).first()
+        if acc is None:
+            log("error",
+                "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /acctBalance body: " + str(
+                    pay) + " response: no account for this customer")
+            return {"status_code": 401, "message": "this phone number is taken"}
+
+
+        return {"status_code": 200, "message": acc.balance}
+    # except Exception as e:
+    #     message = "exception " + str(e) + " occurred with creating otp"
+    #     log("error",
+    #         "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createOTP response: " + str(e))
+    #     return {"status_code": 401, "message": message}
 
 
 @router.post("/checkOTP")
@@ -295,11 +325,11 @@ async def createCustomer(request: Request, response: Response, data: DecryptRequ
 
 
 @router.post("/verifyingCustomer")
-async def verifyCustomer(request: Request, response: Response, payload: dict = Body(...),
+async def verifyCustomer(request: Request, response: Response, data: DecryptRequest,
                          db: Session = Depends(get_db)):
-    try:
+    # try:
         names = ["customerID"]
-        pp = preprocess(payload, names, "/verifyingCustomer",request.client.host)
+        pp = preprocess(data, names, "/verifyingCustomer",request.client.host)
         if not pp["status_code"] == 200:
             log("error", "IP: " + request.client.host + " time: " + str(
                 datetime.now()) + " api: /verifyingCustomer body: " + str(pp["payload"]) + " response: " + str(
@@ -307,8 +337,8 @@ async def verifyCustomer(request: Request, response: Response, payload: dict = B
             return pp
         pay = pp["payload"]
 
-        cus = db.query(Customer).filter(Customer.id == pay["customerID"]).first()
-        if not cus is None:
+        cus = db.query(Customer).filter(Customer.id == int(int(pay["customerID"]))).first()
+        if  cus is None:
             log("error", "IP: " + request.client.host + " time: " + str(
                 datetime.now()) + " api: /verifyingCustomer body: " + str(
                 pay) + " response: 401 customer doesn't exist")
@@ -352,18 +382,18 @@ async def verifyCustomer(request: Request, response: Response, payload: dict = B
             db.refresh(cus)
 
         return {"status_code": 200, "message": "customer has been approved", "customer": cus}
-    except Exception as e:
-        message = "exception " + str(e) + " occurred with verifying account"
-        log("error", "IP: " + request.client.host + " time: " + str(
-            datetime.now()) + " api: /verifyingCustomer response: " + str(e))
-        return {"status_code": 401, "message": message}
+    # except Exception as e:
+    #     message = "exception " + str(e) + " occurred with verifying account"
+    #     log("error", "IP: " + request.client.host + " time: " + str(
+    #         datetime.now()) + " api: /verifyingCustomer response: " + str(e))
+    #     return {"status_code": 401, "message": message}
 
 
 @router.post("/createAccount")
-async def createAccount(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def createAccount(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["customerID", "balance", "friendlyName", "iBan", "accountType"]
-        pp = preprocess(payload, names, "/createAccount",request.client.host)
+        pp = preprocess(data, names, "/createAccount",request.client.host)
         if not pp["status_code"] == 200:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createAccount body: " + str(
@@ -371,8 +401,8 @@ async def createAccount(request: Request, response: Response, payload: dict = Bo
             return pp
         pay = pp["payload"]
 
-        cus = db.query(Customer).filter(Customer.id == pay["customerID"]).first()
-        if not cus is None:
+        cus = db.query(Customer).filter(Customer.id == int(int(pay["customerID"]))).first()
+        if  cus is None:
             log("error",
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createAccount body: " + str(
                     pay) + " response: 401 customer doesn't exist")
@@ -393,13 +423,13 @@ async def createAccount(request: Request, response: Response, payload: dict = Bo
                 "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createAccount body: " + str(
                     pay) + " response: 401 iBan not correct")
             return {"status_code": 401, "message": "iBan incorrect"}
-        oldAccts = db.query(Account).filter(Account.customerID == pay["customerID"]).all()
-        a = Account(customerID=pay["customerID"], dateTime=datetime.now(), accountStatus="active",
-                    accountNumber=generate_bank_account(pay["customerID"], sub_account=len(oldAccts) + 1),
-                    accountType=pay["accountType"], primaryAcount=len(oldAccts) == 0, balance=pay["balance"],
+        oldAccts = db.query(Account).filter(Account.customerID == int(pay["customerID"])).all()
+        a = Account(customerID=int(pay["customerID"]), dateTime=datetime.now(), accountStatus="active",
+                    accountNumber=generate_bank_account(int(pay["customerID"]), sub_account=len(oldAccts) + 1),
+                    accountType=pay["accountType"], primaryAccount=len(oldAccts) == 0, balance=pay["balance"],
                     country="KSA", currency="SAR", friendlyName=pay["friendlyName"], iBan=pay["iBan"])
         db.add(a)
-        db.query(Customer).filter(Customer.id == pay["customerID"]).update({"status": "active"})
+        db.query(Customer).filter(Customer.id == int(pay["customerID"])).update({"status": "active"})
         db.commit()
 
         db.refresh(a)
@@ -413,17 +443,17 @@ async def createAccount(request: Request, response: Response, payload: dict = Bo
 
 
 @router.post("/addKYC")
-async def addKYC(request: Request, response: Response, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def addKYC(request: Request, response: Response, data: DecryptRequest, db: Session = Depends(get_db)):
     try:
         names = ["customerID", "income", "profession", "employment"]
-        pp = preprocess(payload, names, "/addKYC",request.client.host)
+        pp = preprocess(data, names, "/addKYC",request.client.host)
         if not pp["status_code"] == 200:
             log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /addKYC body: " + str(
                 pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
             return pp
         pay = pp["payload"]
 
-        cus = db.query(Customer).filter(Customer.id == pay["customerID"]).first()
+        cus = db.query(Customer).filter(Customer.id == int(pay["customerID"])).first()
         if not cus is None:
             log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /addKYC body: " + str(
                 pay) + " response: 401 customer doesn't exist")
@@ -438,8 +468,8 @@ async def addKYC(request: Request, response: Response, payload: dict = Body(...)
                 pay) + " response: 401 customer not active yet")
             return {"status_code": 301, "message": "customer not active, can't add KYC"}
 
-        db.query(KYC).filter(KYC.customerID == pay["customerID"]).update({"status": "inactive"})
-        k = KYC(customerID=pay["customerID"], dateTime=datetime.now(), status="active", income=pay["income"],
+        db.query(KYC).filter(KYC.customerID == int(pay["customerID"])).update({"status": "inactive"})
+        k = KYC(customerID=int(pay["customerID"]), dateTime=datetime.now(), status="active", income=pay["income"],
                 profession=pay["profession"], employment=pay["employment"])
         db.add(k)
         db.commit()
