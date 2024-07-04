@@ -172,7 +172,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
 
   except:
          message = "exception occurred with login"
-         log(0,message)
+          
          return {"status_code":401,"message":message}
   return {"status_code":200,"user":user,"account":account,"bank":bank,"bankBusiness":bankb}
 
@@ -197,7 +197,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     
   except:
          message = "exception occurred with get account"
-         log(0,message)
+          
          return {"status_code":401,"message":message}
   return {"status_code":200,"account":acc}
 
@@ -225,7 +225,77 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     
   except:
          message = "exception occurred with get create pin"
-         log(0,message)
+          
+         return {"status_code":401,"message":message}
+  return {"status_code":200,"pin":p}
+
+
+@router.post("/pinLogin")
+async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(get_db)):
+  try:
+    names = ["customerID","pin"]
+    pp = preprocess(data, names, "/createPin",request.client.host)
+    if not pp["status_code"] == 200:
+        log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createPin body: " + str(
+            pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    
+    c = db.query(Customer).filter(Customer.id == pay['customerID']).first()
+    if c is None:
+        return {"status_code": 403, "message": "no customer exists with this number"}
+    if not len(pay['pin']) == 4:
+        return {"status_code": 403, "message": "pin should be 4 numbers"}
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).first()
+    if p is None:
+        return {"status_code": 403, "message": "no pin exists for this customer"}
+    
+    if not p.pin == pay['pin']:
+        return {"status_code": 403, "message": "mismatch"}
+    tokens[request.client.host]['cusID'] = p.customerID 
+    
+
+    account = db.query(Account).filter(Account.customerID == str(p.customerID), Account.primaryAccount).first()
+    bank = db.query(Bank).filter(Bank.accountNumber == account.accountNumber).first()
+    bankb = db.query(BankBusiness).filter(BankBusiness.accountNumber == account.accountNumber).first()
+    
+  except:
+         message = "exception occurred with pin"
+          
+         return {"status_code":401,"message":message}
+  return {"status_code":200,"user":c,"account":account,"bank":bank,"bankBusiness":bankb}
+
+@router.post("/changePin")
+async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(get_db)):
+  try:
+    names = ["customerID","oldPin","pin"]
+    pp = preprocess(data, names, "/createPin",request.client.host)
+    if not pp["status_code"] == 200:
+        log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /createPin body: " + str(
+            pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
+        return pp
+    pay = pp["payload"]
+    
+    c = db.query(Customer).filter(Customer.id == pay['customerID']).first()
+    if c is None:
+        return {"status_code": 403, "message": "no customer exists with this number"}
+    if not len(pay['pin']) == 4:
+        return {"status_code": 403, "message": "pin should be 4 numbers"}
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).first()
+    if p is None:
+        return {"status_code": 403, "message": "no pin exists for this customer"}
+    
+    if not p.pin == pay['oldPin']:
+        return {"status_code": 403, "message": "mismatch"}
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).update({'pin':pay['pin']})
+    
+    db.commit()
+    db.refresh(p)
+
+    
+  except:
+         message = "exception occurred with get create pin"
+          
          return {"status_code":401,"message":message}
   return {"status_code":200,"pin":p}
 

@@ -215,7 +215,7 @@ async def gettansaction(request: Request,response: Response, data: DecryptReques
             
         except:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201,"in transactions":inTransactions,"out transactions":outTransactions}
 
@@ -265,7 +265,7 @@ async def tansaction1(request: Request,response: Response, data: DecryptRequest,
             
         except:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         log(1,"from:{}, to:{}, amount:{},sending currency:{}, receiving currency:{}".format(payload["fromAccount"],acc.accountNumber,payload["amount"],payload["fromCurrency"],payload["toCurrency"]))
         db.commit()
@@ -325,7 +325,7 @@ async def tansaction1(request: Request,response: Response, data: DecryptRequest,
                     return trans2
         except:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         log(1,"from:{}, to:{}, amount:{},sending currency:{}, receiving currency:{}".format(payload["fromAccount"],acc.accountNumber,payload["amount"],payload["fromCurrency"],payload["toCurrency"]))
         db.commit()
@@ -391,7 +391,7 @@ async def tansaction1(request: Request,response: Response, data: DecryptRequest,
 
         except Exception as e:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":e}
         log(1,"from:{}, to:{}, amount:{},sending currency:{}, receiving currency:{}".format(payload["fromAccount"],payload["terminal"],payload["amount"],payload["fromCurrency"],payload["toCurrency"]))
         db.commit()
@@ -447,7 +447,7 @@ async def tansaction2(request: Request,response: Response, data: DecryptRequest,
                     return trans2
         except:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         log(1,"from:{}, to:{}, amount:{},sending currency:{}, receiving currency:{}".format(payload["fromAccount"],("iBan"+iBan),payload["amount"],payload["fromCurrency"],payload["toCurrency"]))
         db.commit()
@@ -485,7 +485,7 @@ def tansaction3(intransID,db: Session = Depends(get_db)):
                     return trans2
         except:
             message = "exception occurred with creating transaction"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         log(1,"from:{}, to:{}, amount:{},sending currency:{}, receiving currency:{}".format(intrans.inIBan,intrans.accountNo,intrans.amount,intrans.sendingCurrency,intrans.currency))
         return {"status_code": 201,"message":"transaction registered"}
@@ -496,7 +496,7 @@ def tansaction3(intransID,db: Session = Depends(get_db)):
 #         return addCharge(db,payload["id"],payload["currency"],payload["amount"],payload["feesService"],payload["feesCurr"],"card")
 #     except:
 #         message = "exception occurred with retrieving currencies"
-#         log(0,message)
+#          
 #         return {"status_code":401,"message":message}
   
 
@@ -539,7 +539,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
             
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201 ,"message":"bank account created"}
 
@@ -567,7 +567,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
                 
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201 ,"message":bank}
 
@@ -598,7 +598,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
                 
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201 ,"message":bank}
 
@@ -641,7 +641,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
             
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201 ,"message":"bank account created"}        
 
@@ -670,7 +670,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
                 
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201 ,"message":bank}        
 
@@ -698,7 +698,7 @@ async def createBank(request: Request,response: Response, data: DecryptRequest,d
                 
         except:
             message = "exception occurred with creating bank"
-            log(0,message)
+             
             return {"status_code":401,"message":message}
         return {"status_code": 201,"message":bank,"account":account}        
 
@@ -858,7 +858,7 @@ def transactionOperation(sender,receiver,sendAmount,sendCurr,recCurr,db,displayN
         db.refresh(t2)
     except:
         message = "exception occurred with creating transaction operation"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
             
     return {"status_code":201,"message":"transaction operation complete","t1":t1.id,"t2":t2.id}
@@ -891,7 +891,7 @@ def addFee(feeCode,feeGroup,feeDesc,feeRate,feeAmount,feeMax,feeMin,db):
         db.add(f)
     except:
         message = "exception occurred with retrieving fees"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     return {"status_code":201,"message":"fee added successfully"}
 
@@ -908,7 +908,7 @@ def calcFee(db,feeCode,amount):
             feeAmount = fee.feeMin
     except:
         message = "exception occurred with retrieving fee"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     
     return {"status_code":201,"fee":feeAmount}
@@ -925,7 +925,7 @@ def addBank(db,accountNo,bankName,friendlyName,country,currency,otherNames,surNa
         db.add(bank)
     except:
         message = "exception occurred with retrieving banks"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     return {"status_code":201,"message":"bank added successfully"}
 
@@ -941,7 +941,7 @@ def addBankB(db,accountNo,bankName,friendlyName,country,currency,otherNames,surN
         db.add(bank)
     except:
         message = "exception occurred with retrieving banks"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     return {"status_code":201,"message":"bank added successfully"}
 
@@ -1001,7 +1001,7 @@ async def testT(request: Request,response: Response, data: DecryptRequest,db: Se
         return {"status_code":201,"currencies":cur}
     except:
         message = "exception occurred with retrieving currencies"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     
 @router.get("/country")
@@ -1018,7 +1018,7 @@ async def testT(request: Request,response: Response, data: DecryptRequest,db: Se
         return {"status_code":201,"currencies":countries}
     except:
         message = "exception occurred with retrieving countries"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 @router.post("/getFees")
@@ -1043,7 +1043,7 @@ async def getFees(request: Request,response: Response, data: DecryptRequest,db: 
         
     except:
         message = "exception occurred with retrieving fees"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 @router.post("/getEligibility")
@@ -1083,7 +1083,7 @@ async def getFees(request: Request,response: Response, data: DecryptRequest,db: 
         
     except:
         message = "exception occurred with retrieving eligibility"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 # @router.post("/charge")
@@ -1158,7 +1158,7 @@ async def getFees(request: Request,response: Response, data: DecryptRequest,db: 
         
 #     except:
 #         message = "exception occurred with charge process"
-#         log(0,message)
+#          
 #         return {"status_code":401,"message":message}
 
 @router.get("/getCharge")
@@ -1192,7 +1192,7 @@ async def getFees(request: Request,response: Response, data: DecryptRequest,db: 
         
     except:
         message = "exception occurred with retrieving eligibility"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 @router.post("/addCard")
@@ -1220,7 +1220,7 @@ async def addcard(request: Request,response: Response, data: DecryptRequest,db: 
         
     except:
         message = "exception occurred with adding card"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 @router.post("/removeCard")
@@ -1242,7 +1242,7 @@ async def addcard(request: Request,response: Response, data: DecryptRequest,db: 
         return {"status_code":201,"message":"card removed" }
     except:
         message = "exception occurred with adding card"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 
@@ -1261,7 +1261,7 @@ async def addcard(request: Request,response: Response, payload: dict = Body(...)
     return {"status_code":200,"message":re}
     # except:
     #     message = "exception occurred with encoding id"
-    #     log(0,message)
+    #      
     #     return {"status_code":401,"message":message}
 
 
@@ -1292,7 +1292,7 @@ async def getcard(request: Request,response: Response, data: DecryptRequest,db: 
             
     except:
         message = "exception occurred with getting card"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 
@@ -1352,7 +1352,7 @@ async def testT(request: Request,response: Response,db: Session = Depends(get_db
                 return trans3
     except:
         message = "exception occurred with creating transaction"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
     log(1,"from:OLW bank, to:{acc.accountNumber}, amount:{charge.amount},sending currency:{charge.currency}, receiving currency:{charge.currency}")
     db.query(Charge).filter(Charge.id==chID).update({"chargeStatus":"Completed","transactionID":trans["t1"],"webhookID":payload["webhookID"]})
@@ -1401,7 +1401,7 @@ def addCard(db,custID,cardNum,expM,expY,name,secretNum):
         return {"status_code":201,"message":ca}
     except Exception as e:
         message = "exception occurred with creating card"
-        log(0,message)
+         
         return {"status_code":401,"message":message}
 
 # def addCharge(db,custID,curr,am,feeS,feeC,meth):
@@ -1430,7 +1430,7 @@ def addCard(db,custID,cardNum,expM,expY,name,secretNum):
 #         return {"status_code":201,"message":c}
 #     except:
 #         message = "exception occurred with creating charge"
-#         log(0,message)
+#          
 #         return {"status_code":401,"message":message}
     
 
