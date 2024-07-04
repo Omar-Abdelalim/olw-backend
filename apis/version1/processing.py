@@ -215,9 +215,11 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     c = db.query(Customer).filter(Customer.id == pay['customerID']).first()
     if c is None:
         return {"status_code": 403, "message": "no customer exists with this number"}
+    
     if not len(pay['pin']) == 4:
         return {"status_code": 403, "message": "pin should be 4 numbers"}
-    p = Pin(customerID = pay['customerID'],pin = pay['pin'])
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).update({'status':'expired'})
+    p = Pin(customerID = pay['customerID'],pin = pay['pin'],status='active')
     db.add(p)
     db.commit()
     db.refresh(p)
@@ -227,7 +229,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
          message = "exception occurred with get create pin"
           
          return {"status_code":401,"message":message}
-  return {"status_code":200,"pin":p}
+  return {"status_code":200,'message':"Pin created successfully","pin":p}
 
 
 @router.post("/pinLogin")
@@ -246,7 +248,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
         return {"status_code": 403, "message": "no customer exists with this number"}
     if not len(pay['pin']) == 4:
         return {"status_code": 403, "message": "pin should be 4 numbers"}
-    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).first()
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID'],Pin.status == 'active').first()
     if p is None:
         return {"status_code": 403, "message": "no pin exists for this customer"}
     
@@ -281,7 +283,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
         return {"status_code": 403, "message": "no customer exists with this number"}
     if not len(pay['pin']) == 4:
         return {"status_code": 403, "message": "pin should be 4 numbers"}
-    p = db.query(Pin).filter(Pin.customerID == pay['customerID']).first()
+    p = db.query(Pin).filter(Pin.customerID == pay['customerID'],Pin.status == 'active').first()
     if p is None:
         return {"status_code": 403, "message": "no pin exists for this customer"}
     

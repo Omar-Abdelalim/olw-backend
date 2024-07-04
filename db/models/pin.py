@@ -8,6 +8,7 @@ class Pin(Base):
     customerID=Column(String,nullable=False)
     pin=Column(String,nullable=False)
     password=Column(String,nullable=True)
+    status = Column(String,nullable=False)
     
     
 
