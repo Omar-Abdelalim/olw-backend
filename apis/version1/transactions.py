@@ -197,9 +197,9 @@ async def intiAccts(request: Request=None,response: Response=None,db: Session = 
 
 
 @router.post("/transaction")
-async def tansaction1(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def tansaction1(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -252,9 +252,9 @@ async def tansaction1(request: Request,response: Response,payload: dict = Body(.
         return {"status_code": 201, "customer": cus ,"message":"transaction registered","transactions":tra1}
 
 @router.post("/transactionQr")
-async def tansaction1(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def tansaction1(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -311,8 +311,8 @@ async def tansaction1(request: Request,response: Response,payload: dict = Body(.
         return {"status_code": 201, "customer": cus ,"message":"transaction registered","transactions":trans["t1"]}
 
 @router.post("/transactionMerchant")
-async def tansaction1(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
-        pp = preprocess(payload,request.client.host)
+async def tansaction1(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -322,7 +322,7 @@ async def tansaction1(request: Request,response: Response,payload: dict = Body(.
         db.query(QRTer).filter(QRTer.terminalID == payload["terminal"],QRTer.qrStatus == "pending").update({"qrStatus":"processing"})
         db.commit()
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -384,9 +384,9 @@ async def tansaction1(request: Request,response: Response,payload: dict = Body(.
 
 
 @router.post("/transactionOut")
-async def tansaction2(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def tansaction2(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -468,7 +468,7 @@ def tansaction3(intransID,db: Session = Depends(get_db)):
         return {"status_code": 201,"message":"transaction registered"}
 
 # @router.get("/testT")
-# async def testT(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+# async def testT(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
 #     try:
 #         return addCharge(db,payload["id"],payload["currency"],payload["amount"],payload["feesService"],payload["feesCurr"],"card")
 #     except:
@@ -478,9 +478,9 @@ def tansaction3(intransID,db: Session = Depends(get_db)):
   
 
 @router.post("/bank")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -521,9 +521,9 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201 ,"message":"bank account created"}
 
 @router.post("/getBanks")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -549,9 +549,9 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201 ,"message":bank}
 
 @router.post("/getBanksIban")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -580,9 +580,9 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201 ,"message":bank}
 
 @router.post("/bankB")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -623,9 +623,9 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201 ,"message":"bank account created"}        
 
 @router.post("/getBanksB")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -652,9 +652,9 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201 ,"message":bank}        
 
 @router.post("/getBanksBIban")
-async def createBank(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def createBank(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
         try:
-            pp = preprocess(payload,request.client.host)
+            pp = preprocess(data,request.client.host)
             if not pp["status_code"] == 200:
                 return pp
             payload = pp["payload"]
@@ -680,8 +680,8 @@ async def createBank(request: Request,response: Response,payload: dict = Body(..
         return {"status_code": 201,"message":bank,"account":account}        
 
 @router.post("/inTransaction")
-async def testT(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
-    pp = preprocess(payload,request.client.host)
+async def testT(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
+    pp = preprocess(data,request.client.host)
     if not pp["status_code"] == 200:
         return pp
     payload = pp["payload"]
@@ -690,8 +690,8 @@ async def testT(request: Request,response: Response,payload: dict = Body(...),db
     db.commit()
 
 @router.post("/balanceBank")
-async def testT(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
-    pp = preprocess(payload,request.client.host)
+async def testT(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
+    pp = preprocess(data,request.client.host)
     if not pp["status_code"] == 200:
         return pp
     payload = pp["payload"]
@@ -965,9 +965,9 @@ def checkToken(id,token):
     
 
 @router.get("/currency")
-async def testT(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def testT(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -982,9 +982,9 @@ async def testT(request: Request,response: Response,payload: dict = Body(...),db
         return {"status_code":401,"message":message}
     
 @router.get("/country")
-async def testT(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def testT(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -999,9 +999,9 @@ async def testT(request: Request,response: Response,payload: dict = Body(...),db
         return {"status_code":401,"message":message}
 
 @router.post("/getFees")
-async def getFees(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def getFees(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -1024,16 +1024,16 @@ async def getFees(request: Request,response: Response,payload: dict = Body(...),
         return {"status_code":401,"message":message}
 
 @router.post("/getEligibility")
-async def getFees(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def getFees(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
-        check = checkToken(payload["id"],payload["token"])
-        if not check:
-            return {"status_code":400,"message":"token invalid"}
-        
+        pp = preprocess(data,request.client.host)
+        if not pp["status_code"] == 200:
+            return pp
+        payload = pp["payload"]
          
         
 
@@ -1064,7 +1064,7 @@ async def getFees(request: Request,response: Response,payload: dict = Body(...),
         return {"status_code":401,"message":message}
 
 # @router.post("/charge")
-# async def charge(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+# async def charge(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
 #     try:
 #         check = checkToken(payload["id"],payload["token"])
 #         if not check:
@@ -1139,9 +1139,9 @@ async def getFees(request: Request,response: Response,payload: dict = Body(...),
 #         return {"status_code":401,"message":message}
 
 @router.get("/getCharge")
-async def getFees(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def getFees(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -1173,9 +1173,9 @@ async def getFees(request: Request,response: Response,payload: dict = Body(...),
         return {"status_code":401,"message":message}
 
 @router.post("/addCard")
-async def addcard(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def addcard(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        pp = preprocess(payload,request.client.host)
+        pp = preprocess(data,request.client.host)
         if not pp["status_code"] == 200:
             return pp
         payload = pp["payload"]
@@ -1201,12 +1201,12 @@ async def addcard(request: Request,response: Response,payload: dict = Body(...),
         return {"status_code":401,"message":message}
 
 @router.post("/removeCard")
-async def addcard(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def addcard(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        check = checkToken(payload["id"],payload["token"])
-        if not check:
-            return {"status_code":400,"message":"token invalid"}
-        
+        pp = preprocess(data,request.client.host)
+        if not pp["status_code"] == 200:
+            return pp
+        payload = pp["payload"]
          
         
         card = db.query(Card).filter(Card.token == payload["cardToken"],Card.cardStatus == "active").first()
@@ -1232,7 +1232,7 @@ async def addcard(cusID,request: Request,response: Response,db: Session = Depend
     return Response(content=html_content, media_type="text/html")
 
 @router.post("/encodeID")
-async def addcard(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def addcard(request: Request,response: Response, payload: dict = Body(...),db: Session = Depends(get_db)):
     # try:
     re = AlphanumericConverter.encode(payload["id"])
     return {"status_code":200,"message":re}
@@ -1243,12 +1243,12 @@ async def addcard(request: Request,response: Response,payload: dict = Body(...),
 
 
 @router.get("/getCards")
-async def getcard(request: Request,response: Response,payload: dict = Body(...),db: Session = Depends(get_db)):
+async def getcard(request: Request,response: Response, data: DecryptRequest,db: Session = Depends(get_db)):
     try:
-        check = checkToken(payload["id"],payload["token"])
-        if not check:
-            return {"status_code":400,"message":"token invalid"}
-        
+        pp = preprocess(data,request.client.host)
+        if not pp["status_code"] == 200:
+            return pp
+        payload = pp["payload"]
          
         
         cards = db.query(Card).filter(Card.customerID == str(payload["id"]),Card.cardStatus == "active").all()

@@ -145,10 +145,10 @@ class DecryptRequest(BaseModel):
 
 
 @router.post("/login")
-async def signIn(request: Request, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(get_db)):
   try:
     names = ["phoneNumber", "countryCode"]
-    pp = preprocess(payload, names, "/login",request.client.host)
+    pp = preprocess(data, names, "/login",request.client.host)
     if not pp["status_code"] == 200:
         log("error", "IP: " + request.client.host + " time: " + str(datetime.now()) + " api: /login body: " + str(
             pp["payload"]) + " response: " + str(pp["status_code"]) + " " + str(pp["message"]))
@@ -163,7 +163,6 @@ async def signIn(request: Request, payload: dict = Body(...), db: Session = Depe
     tokens[request.client.host]['cusID'] = user.id 
     
 
-
     account = db.query(Account).filter(Account.customerID == str(user.id), Account.primaryAccount).first()
     bank = db.query(Bank).filter(Bank.accountNumber == account.accountNumber).first()
     bankb = db.query(BankBusiness).filter(BankBusiness.accountNumber == account.accountNumber).first()
@@ -171,7 +170,7 @@ async def signIn(request: Request, payload: dict = Body(...), db: Session = Depe
     
 
   except:
-         message = "exception occurred with retrieving login"
+         message = "exception occurred with login"
          log(0,message)
          return {"status_code":401,"message":message}
   return {"status_code":200,"user":user,"account":account,"bank":bank,"bankBusiness":bankb}
