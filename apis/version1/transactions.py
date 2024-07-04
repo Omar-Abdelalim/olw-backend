@@ -105,7 +105,7 @@ def decrypt_message_again(data: DecryptRequest):
     return plaintext2_str
 
 
-def preprocess(data: DecryptRequest, requ,ip):
+def preprocess(data: DecryptRequest,ip):
     p = json.loads(data.message)
 
     print("from "," :", p)
