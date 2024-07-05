@@ -216,9 +216,11 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     if c is None:
         return {"status_code": 403, "message": "no customer exists with this number"}
     
-    # if not len(pay['pin']) == 4:
-    #     return {"status_code": 403, "message": "pin should be 4 numbers"}
-    db.query(Pin).filter(Pin.customerID == pay['customerID']).update({'status':'expired'})
+    if not len(pay['pin']) == 4:
+        return {"status_code": 403, "message": "pin should be 4 numbers"}
+    op = db.query(Pin).filter(Pin.customerID == pay['customerID']).first()
+    if not op is None:
+        db.query(Pin).filter(Pin.customerID == pay['customerID']).update({'status':'expired'})
     p = Pin(customerID = pay['customerID'],pin = pay['pin'],status='active')
     db.add(p)
     db.commit()
