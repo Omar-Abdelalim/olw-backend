@@ -284,6 +284,7 @@ async def signIn(request: Request,  data: DecryptRequest, db: Session = Depends(
     if not len(pay['pin']) == 4:
         return {"status_code": 403, "message": "pin should be 4 numbers"}
     p = db.query(Pin).filter(Pin.customerID == pay['customerID'],Pin.status == 'active').first()
+    
     if p is None:
         return {"status_code": 403, "message": "no pin exists for this customer"}
     
